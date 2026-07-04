@@ -1,0 +1,101 @@
+// Prisma schema for the Mini LMS backend.
+// Run `npm run prisma:generate` after editing this file, and
+// `npm run prisma:migrate` to create/apply migrations against DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MODERATOR
+  TEACHER
+  STUDENT
+  ACCOUNTANT
+}
+
+enum PaymentStatus {
+  Paid
+  Partial
+  Unpaid
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role
+  classId      Int?     @map("class_id")
+  class        Class?   @relation(fields: [classId], references: [id])
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Reverse relations
+  taughtSchedules Schedule[] @relation("TeacherSchedules")
+  payments        Payment[]  @relation("StudentPayments")
+
+  @@map("users")
+}
+
+model Class {
+  id        Int      @id @default(autoincrement())
+  className String   @map("class_name")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  students  User[]
+  schedules Schedule[]
+
+  @@map("classes")
+}
+
+model Subject {
+  id          Int      @id @default(autoincrement())
+  subjectName String   @map("subject_name")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  schedules Schedule[]
+
+  @@map("subjects")
+}
+
+// "schedules_and_resources" in the requirements - each row binds a
+// class + subject + resource + teacher + date + Google Meet link.
+model Schedule {
+  id             Int      @id @default(autoincrement())
+  title          String
+  resourceUrl    String   @map("resource_url")
+  classId        Int      @map("class_id")
+  subjectId      Int      @map("subject_id")
+  teacherId      Int      @map("teacher_id")
+  scheduledDate  DateTime @map("scheduled_date")
+  googleMeetUrl  String   @map("google_meet_url")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  class   Class   @relation(fields: [classId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+  teacher User    @relation("TeacherSchedules", fields: [teacherId], references: [id])
+
+  @@map("schedules_and_resources")
+}
+
+model Payment {
+  id          Int           @id @default(autoincrement())
+  studentId   Int           @map("student_id")
+  amountDue   Decimal       @map("amount_due") @db.Decimal(10, 2)
+  amountPaid  Decimal       @default(0) @map("amount_paid") @db.Decimal(10, 2)
+  status      PaymentStatus @default(Unpaid)
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  student User @relation("StudentPayments", fields: [studentId], references: [id])
+
+  @@map("payments")
+}

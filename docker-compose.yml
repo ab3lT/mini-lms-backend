@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mini_lms
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Overrides whatever DATABASE_URL is in .env so the app always talks
+      # to the "postgres" service on the compose network, not localhost.
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/mini_lms?schema=public
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # One-off seeder for the Super Admin account. Not started by `docker
+  # compose up` - run it explicitly (see README) after the api's migrations
+  # have applied.
+  seed:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/mini_lms?schema=public
+    # entrypoint (docker-entrypoint.sh) still runs `prisma migrate deploy`
+    # first, then execs this command instead of starting the server.
+    command: ['node', 'dist/prisma/seed.js']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles: ['seed']
+
+volumes:
+  postgres_data:
