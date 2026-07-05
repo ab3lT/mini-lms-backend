@@ -9,6 +9,7 @@ import { Role } from '../common/enums/role.enum';
 const SAFE_SELECT = {
   id: true,
   username: true,
+  email: true,
   role: true,
   classId: true,
   createdAt: true,
@@ -33,6 +34,7 @@ export class UsersService {
     return this.prisma.user.create({
       data: {
         username: dto.username,
+        email: dto.email,
         passwordHash,
         role: dto.role,
         classId: classId ?? null,
@@ -42,10 +44,10 @@ export class UsersService {
   }
 
   findAll() {
-    return this.prisma.user.findMany({ select: SAFE_SELECT, orderBy: { id: 'asc' } });
+    return this.prisma.user.findMany({ select: SAFE_SELECT, orderBy: { createdAt: 'asc' } });
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const user = await this.prisma.user.findUnique({ where: { id }, select: SAFE_SELECT });
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
@@ -53,11 +55,12 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, dto: UpdateUserDto) {
+  async update(id: string, dto: UpdateUserDto) {
     await this.findOne(id);
 
-    const data: { username?: string; role?: Role; classId?: number | null } = {};
+    const data: { username?: string; email?: string; role?: Role; classId?: number | null } = {};
     if (dto.username !== undefined) data.username = dto.username;
+    if (dto.email !== undefined) data.email = dto.email;
     if (dto.role !== undefined) data.role = dto.role;
 
     if (dto.role !== undefined && dto.role !== Role.STUDENT) {
@@ -70,7 +73,7 @@ export class UsersService {
     return this.prisma.user.update({ where: { id }, data, select: SAFE_SELECT });
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     await this.findOne(id);
     await this.prisma.user.delete({ where: { id } });
     return { message: `User ${id} deleted` };
@@ -78,7 +81,7 @@ export class UsersService {
 
   // Assigns/re-assigns a STUDENT to a class. Rejects non-students outright -
   // class assignment is a student-only concept per the data model.
-  async assignClass(id: number, classId: number) {
+  async assignClass(id: string, classId: number) {
     const user = await this.findOne(id);
     if (user.role !== Role.STUDENT) {
       throw new BadRequestException('Only STUDENT accounts can be assigned to a class');
@@ -92,7 +95,7 @@ export class UsersService {
     });
   }
 
-  async resetPassword(id: number, dto: ResetPasswordDto) {
+  async resetPassword(id: string, dto: ResetPasswordDto) {
     await this.findOne(id);
     const passwordHash = await bcrypt.hash(dto.newPassword, 10);
     await this.prisma.user.update({ where: { id }, data: { passwordHash } });

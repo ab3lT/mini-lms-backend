@@ -4,7 +4,7 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -48,44 +48,44 @@ export class UsersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a user by id' })
-  @ApiParam({ name: 'id', type: Number })
+  @ApiParam({ name: 'id', type: String })
   @ApiResponse({ status: 200, description: 'User retrieved successfully' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a user' })
-  @ApiParam({ name: 'id', type: Number })
+  @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: UpdateUserDto })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a user' })
-  @ApiParam({ name: 'id', type: Number })
+  @ApiParam({ name: 'id', type: String })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.remove(id);
   }
 
   @Patch(':id/assign-class')
   @ApiOperation({ summary: 'Assign a user to a class' })
-  @ApiParam({ name: 'id', type: Number })
+  @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: AssignClassDto })
   @ApiResponse({ status: 200, description: 'User class assignment updated successfully' })
-  assignClass(@Param('id', ParseIntPipe) id: number, @Body() dto: AssignClassDto) {
+  assignClass(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AssignClassDto) {
     return this.usersService.assignClass(id, dto.classId);
   }
 
   @Patch(':id/reset-password')
   @ApiOperation({ summary: 'Reset a user password' })
-  @ApiParam({ name: 'id', type: Number })
+  @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: ResetPasswordDto })
   @ApiResponse({ status: 200, description: 'Password reset successfully' })
-  resetPassword(@Param('id', ParseIntPipe) id: number, @Body() dto: ResetPasswordDto) {
+  resetPassword(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ResetPasswordDto) {
     return this.usersService.resetPassword(id, dto);
   }
 }

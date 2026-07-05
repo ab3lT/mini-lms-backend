@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -54,9 +55,9 @@ export class PaymentsController {
 
   @Get('student/:studentId')
   @ApiOperation({ summary: 'Get payments for a student' })
-  @ApiParam({ name: 'studentId', type: Number })
+  @ApiParam({ name: 'studentId', type: String })
   @ApiResponse({ status: 200, description: 'Student payments retrieved successfully' })
-  findByStudent(@Param('studentId', ParseIntPipe) studentId: number) {
+  findByStudent(@Param('studentId', ParseUUIDPipe) studentId: string) {
     return this.paymentsService.findByStudent(studentId);
   }
 

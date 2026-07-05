@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { AuthenticatedUser } from '../../common/types/authenticated-user.interface';
 
 interface JwtPayload {
-  sub: number;
+  sub: string;
   username: string;
   role: string;
   classId: number | null;

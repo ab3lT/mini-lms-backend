@@ -132,7 +132,7 @@ export class SchedulesService {
     if (!subject) throw new BadRequestException(`Subject with id ${subjectId} does not exist`);
   }
 
-  private async assertTeacherExists(teacherId: number) {
+  private async assertTeacherExists(teacherId: string) {
     const teacher = await this.prisma.user.findUnique({ where: { id: teacherId } });
     if (!teacher || teacher.role !== Role.TEACHER) {
       throw new BadRequestException(`User with id ${teacherId} is not a valid TEACHER account`);

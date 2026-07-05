@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDateString, IsInt, IsNotEmpty, IsString, IsUrl } from 'class-validator';
+import { IsDateString, IsInt, IsNotEmpty, IsString, IsUrl, IsUUID } from 'class-validator';
 
 export class CreateScheduleDto {
   @ApiProperty({ example: 'Algebra class' })
@@ -22,10 +22,9 @@ export class CreateScheduleDto {
   @Type(() => Number)
   subjectId: number;
 
-  @ApiProperty({ example: 5 })
-  @IsInt()
-  @Type(() => Number)
-  teacherId: number;
+  @ApiProperty({ example: '3fa85f64-5717-4562-b3fc-2c963f66afa6' })
+  @IsUUID()
+  teacherId: string;
 
   // ISO 8601 date/date-time string, e.g. "2026-07-10" or
   // "2026-07-10T09:00:00Z". Always interpreted/compared in UTC.

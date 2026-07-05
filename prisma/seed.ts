@@ -6,8 +6,8 @@
  * POST /users.
  *
  * Usage: npm run seed
- * Reads SUPER_ADMIN_USERNAME / SUPER_ADMIN_PASSWORD from .env (falls back to
- * defaults below if not set).
+ * Reads SUPER_ADMIN_USERNAME / SUPER_ADMIN_EMAIL / SUPER_ADMIN_PASSWORD from
+ * .env (falls back to defaults below if not set).
  */
 import { PrismaClient, Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
@@ -16,6 +16,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   const username = process.env.SUPER_ADMIN_USERNAME || 'superadmin';
+  const email = process.env.SUPER_ADMIN_EMAIL || 'superadmin@example.com';
   const password = process.env.SUPER_ADMIN_PASSWORD || 'ChangeMe123!';
 
   const existing = await prisma.user.findUnique({ where: { username } });
@@ -29,6 +30,7 @@ async function main() {
   const admin = await prisma.user.create({
     data: {
       username,
+      email,
       passwordHash,
       role: Role.ADMIN,
     },
@@ -36,6 +38,7 @@ async function main() {
 
   console.log(`Created Super Admin account:`);
   console.log(`  username: ${admin.username}`);
+  console.log(`  email: ${admin.email}`);
   console.log(`  password: ${password} (change this after first login)`);
 }
 

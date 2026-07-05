@@ -47,7 +47,7 @@ export class PaymentsService {
     return payment;
   }
 
-  async findByStudent(studentId: number) {
+  async findByStudent(studentId: string) {
     await this.assertStudentExists(studentId);
     return this.prisma.payment.findMany({
       where: { studentId },
@@ -124,7 +124,7 @@ export class PaymentsService {
     return PaymentStatus.PARTIAL;
   }
 
-  private async assertStudentExists(studentId: number) {
+  private async assertStudentExists(studentId: string) {
     const student = await this.prisma.user.findUnique({ where: { id: studentId } });
     if (!student || student.role !== Role.STUDENT) {
       throw new BadRequestException(`User with id ${studentId} is not a valid STUDENT account`);
